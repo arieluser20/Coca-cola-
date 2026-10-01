@@ -1,0 +1,129 @@
+static void UpdatePresence()
+{
+    DiscordRichPresence discordPresence;
+    memset(&discordPresence, 0, sizeof(discordPresence));
+    discordPresence.state = "Desarrollador web";
+    discordPresence.details = "Instalación completa";
+    discordPresence.startTimestamp = 1507665886;
+    discordPresence.endTimestamp = 1507665886;
+    discordPresence.largeImageText = "Numbani";
+    discordPresence.smallImageText = "Rogue - Level 100";
+    discordPresence.partyId = "ae488379-351d-4a4f-ad32-2b9b01c91657";
+    discordPresence.partySize = 1;
+    discordPresence.partyMax = 15;
+    discordPresence.joinSecret = "MTI4NzM0OjFpMmhuZToxMjMxMjM= ";
+    Discord_UpdatePresence(&discordPresence);
+}
+# ------------------------------------------------------------
+# Aplicación Coca-Cola Info App
+# Autor: Edison
+# Descripción: Sistema web con Flask que muestra información
+# sobre Coca-Cola, productos, historia y sostenibilidad.
+# ------------------------------------------------------------
+
+from flask import Flask, render_template, request, redirect, url_for
+
+app = Flask(__name__)
+
+# ------------------ Datos simulados -------------------------
+productos = [
+    {"id": 1, "nombre": "Coca-Cola Original", "categoria": "Gaseosa", "descripcion": "La clásica bebida desde 1886."},
+    {"id": 2, "nombre": "Coca-Cola Zero", "categoria": "Gaseosa", "descripcion": "Sin azúcar, mismo sabor."},
+    {"id": 3, "nombre": "Sprite", "categoria": "Gaseosa", "descripcion": "Refresco de limón."},
+    {"id": 4, "nombre": "Fanta Naranja", "categoria": "Gaseosa", "descripcion": "Refresco con sabor a naranja."},
+    {"id": 5, "nombre": "Powerade", "categoria": "Energética", "descripcion": "Bebida deportiva para hidratación."}
+]
+
+historia = [
+    "Fundada en 1886 en Atlanta por John Pemberton.",
+    "Expansión global en el siglo XX.",
+    "Campañas icónicas como 'Share a Coke'.",
+    "Compromiso con sostenibilidad y reciclaje."
+]
+
+sostenibilidad = {
+    "agua": "Programas de conservación y acceso a agua potable.",
+    "reciclaje": "Envases reciclables y reducción de plástico.",
+    "energía": "Uso de energías renovables en plantas.",
+    "comunidad": "Apoyo a proyectos sociales y educativos."
+}
+
+# ------------------ Rutas principales -----------------------
+
+@app.route("/")
+def inicio():
+    return """
+    <h1>Bienvenido a Coca-Cola Info App</h1>
+    <p>Explora productos, historia y sostenibilidad.</p>
+    <ul>
+        <li><a href='/productos'>Productos</a></li>
+        <li><a href='/historia'>Historia</a></li>
+        <li><a href='/sostenibilidad'>Sostenibilidad</a></li>
+    </ul>
+    """
+
+@app.route("/productos")
+def ver_productos():
+    html = "<h2>Productos Coca-Cola</h2><ul>"
+    for p in productos:
+        html += f"<li><a href='/producto/{p['id']}'>{p['nombre']}</a></li>"
+    html += "</ul><a href='/'>Volver</a>"
+    return html
+
+@app.route("/producto/<int:id>")
+def detalle_producto(id):
+    prod = next((p for p in productos if p["id"] == id), None)
+    if prod:
+        return f"""
+        <h2>{prod['nombre']}</h2>
+        <p>Categoría: {prod['categoria']}</p>
+        <p>{prod['descripcion']}</p>
+        <a href='/productos'>Volver</a>
+        """
+    else:
+        return "<p>Producto no encontrado.</p><a href='/productos'>Volver</a>"
+
+@app.route("/historia")
+def ver_historia():
+    html = "<h2>Historia de Coca-Cola</h2><ul>"
+    for h in historia:
+        html += f"<li>{h}</li>"
+    html += "</ul><a href='/'>Volver</a>"
+    return html
+
+@app.route("/sostenibilidad")
+def ver_sostenibilidad():
+    html = "<h2>Compromiso con la sostenibilidad</h2><ul>"
+    for clave, valor in sostenibilidad.items():
+        html += f"<li><b>{clave.capitalize()}:</b> {valor}</li>"
+    html += "</ul><a href='/'>Volver</a>"
+    return html
+
+# ------------------ Formularios -----------------------------
+
+@app.route("/agregar", methods=["GET", "POST"])
+def agregar_producto():
+    if request.method == "POST":
+        nuevo = {
+            "id": len(productos) + 1,
+            "nombre": request.form["nombre"],
+            "categoria": request.form["categoria"],
+            "descripcion": request.form["descripcion"]
+        }
+        productos.append(nuevo)
+        return redirect(url_for("ver_productos"))
+    return """
+    <h2>Agregar Producto</h2>
+    <form method='post'>
+        Nombre: <input type='text' name='nombre'><br>
+        Categoría: <input type='text' name='categoria'><br>
+        Descripción: <input type='text' name='descripcion'><br>
+        <input type='submit' value='Agregar'>
+    </form>
+    <a href='/productos'>Volver</a>
+    """
+
+# ------------------ Ejecución -------------------------------
+
+if __name__ == "__main__":
+    app.run(debug=True)
